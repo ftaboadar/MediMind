@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediMind · Login · Google Pixel 10</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue-100: #D6EAF8;
+      --blue-300: #7BBDDF;
+      --blue-500: #1A6FA8;
+      --blue-700: #0D3F61;
+      --blue-900: #071E2E;
+      --green-100: #D4EFDF;
+      --green-500: #2A9D6F;
+      --green-700: #1A6347;
+      --border: #E2EAF0;
+      --bg: #F8FAFB;
+      --text-primary: #071E2E;
+      --text-secondary: #4A6580;
+      --text-muted: #8AA4B8;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #1C1C1E;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    /* ── PIXEL 10 DEVICE SHELL ── */
+    .pixel-device {
+      position: relative;
+      width: 393px;
+      height: 851px;
+      background: #0A0A0A;
+      border-radius: 52px;
+      box-shadow:
+        0 0 0 1.5px #2A2A2A,
+        0 0 0 3px #1A1A1A,
+        0 30px 80px rgba(0,0,0,.7),
+        0 10px 30px rgba(0,0,0,.5);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    /* Side buttons */
+    .pixel-device::before {
+      content: '';
+      position: absolute;
+      right: -4px;
+      top: 160px;
+      width: 4px;
+      height: 60px;
+      background: #2A2A2A;
+      border-radius: 0 3px 3px 0;
+      box-shadow: 0 80px 0 #2A2A2A;
+    }
+    .pixel-device::after {
+      content: '';
+      position: absolute;
+      left: -4px;
+      top: 200px;
+      width: 4px;
+      height: 100px;
+      background: #2A2A2A;
+      border-radius: 3px 0 0 3px;
+      box-shadow: 0 120px 0 #2A2A2A;
+    }
+
+    /* ── SCREEN ── */
+    .pixel-screen {
+      position: absolute;
+      inset: 6px;
+      border-radius: 47px;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px 0;
+      z-index: 10;
+    }
+    .status-time { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+    .status-icons { display: flex; gap: 6px; align-items: center; }
+    .status-icon {
+      width: 16px; height: 10px; background: var(--text-primary);
+      border-radius: 2px; opacity: .75;
+    }
+    .status-icon.signal { width: 12px; height: 10px; clip-path: polygon(0 100%, 30% 60%, 60% 30%, 100% 0, 100% 100%); border-radius: 0; }
+    .status-icon.wifi { width: 14px; height: 10px; clip-path: polygon(50% 100%, 20% 60%, 0 40%, 50% 0, 100% 40%, 80% 60%); border-radius: 0; }
+    .status-icon.battery { width: 22px; height: 11px; border: 1.5px solid var(--text-primary); border-radius: 3px; position: relative; opacity: .75; }
+    .status-icon.battery::after { content: ''; position: absolute; right: -5px; top: 2px; width: 3px; height: 5px; background: var(--text-primary); border-radius: 0 2px 2px 0; }
+    .status-icon.battery::before { content: ''; position: absolute; left: 1px; top: 1px; bottom: 1px; width: 75%; background: var(--text-primary); border-radius: 1px; opacity: 1; }
+
+    /* ── PUNCH HOLE CAMERA ── */
+    .punch-hole {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 12px;
+      height: 12px;
+      background: #0A0A0A;
+      border-radius: 50%;
+      z-index: 20;
+      box-shadow: 0 0 0 1px #1A1A1A;
+    }
+
+    /* ── SCREEN CONTENT ── */
+    .screen-content {
+      position: absolute;
+      inset: 0;
+      padding-top: 52px;
+      padding-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background:
+        radial-gradient(ellipse at 50% 0%, #D6EAF8 0%, transparent 60%),
+        linear-gradient(180deg, #EDF4FA 0%, #F8FAFB 40%);
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .screen-content::-webkit-scrollbar { display: none; }
+
+    /* ── LOGO ZONE ── */
+    .logo-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 36px 0 28px;
+    }
+    .logo-icon {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, var(--blue-500) 0%, var(--blue-700) 100%);
+      border-radius: 22px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 24px rgba(26,111,168,.35);
+    }
+    .logo-icon svg { width: 38px; height: 38px; }
+    .logo-name {
+      font-size: 28px; font-weight: 700;
+      color: var(--blue-900);
+      letter-spacing: -.5px;
+    }
+    .logo-tagline {
+      font-size: 12px; font-weight: 400;
+      color: var(--text-muted);
+      margin-top: 4px;
+      letter-spacing: .2px;
+    }
+
+    /* ── FORM CARD ── */
+    .form-card {
+      width: calc(100% - 32px);
+      background: white;
+      border-radius: 20px;
+      padding: 28px 24px;
+      box-shadow: 0 4px 20px rgba(13,63,97,.08), 0 1px 4px rgba(0,0,0,.04);
+      margin: 0 16px;
+    }
+
+    .form-title { font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .form-subtitle { font-size: 12px; color: var(--text-muted); margin-bottom: 24px; }
+
+    /* Fields */
+    .field-group { margin-bottom: 16px; }
+    .field-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block; }
+    .field-wrapper { position: relative; }
+    .field-input {
+      width: 100%; padding: 13px 14px 13px 42px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 13px; font-family: 'Inter', sans-serif;
+      color: var(--text-primary);
+      background: var(--bg);
+      outline: none;
+    }
+    .field-input::placeholder { color: var(--text-muted); }
+    .field-input.active { border-color: var(--blue-500); background: white; }
+    .field-icon {
+      position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+      width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;
+    }
+    .field-icon svg { width: 16px; height: 16px; opacity: .45; }
+    .field-eye {
+      position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+      width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; opacity: .35;
+    }
+
+    /* Forgot */
+    .forgot-link {
+      display: flex; justify-content: flex-end; margin-top: 6px; margin-bottom: 24px;
+    }
+    .forgot-link a { font-size: 11px; font-weight: 500; color: var(--blue-500); text-decoration: none; }
+
+    /* Primary button */
+    .btn-primary {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, var(--blue-500) 0%, var(--blue-700) 100%);
+      color: white; border: none; border-radius: 12px;
+      font-size: 14px; font-weight: 700; font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,111,168,.4);
+      letter-spacing: .2px;
+    }
+
+    /* Divider */
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 20px 0;
+      font-size: 11px; color: var(--text-muted);
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* Secondary button */
+    .btn-secondary {
+      width: 100%; padding: 13px;
+      background: transparent;
+      color: var(--blue-500);
+      border: 1.5px solid var(--blue-300);
+      border-radius: 12px;
+      font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif;
+      cursor: pointer;
+    }
+
+    /* ── FOOTER ── */
+    .footer-text {
+      margin-top: 20px;
+      font-size: 10px; color: var(--text-muted); text-align: center;
+      line-height: 1.6;
+      padding: 0 16px;
+    }
+    .footer-text a { color: var(--blue-500); font-weight: 500; text-decoration: none; }
+
+    /* ── HOME INDICATOR ── */
+    .home-indicator {
+      position: absolute;
+      bottom: 10px;
+      left: 50%; transform: translateX(-50%);
+      width: 120px; height: 4px;
+      background: var(--text-primary);
+      border-radius: 100px;
+      opacity: .2;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="pixel-device">
+    <div class="pixel-screen">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <div class="status-time">9:41</div>
+        <div style="width:80px"></div><!-- spacer for punch hole -->
+        <div class="status-icons">
+          <div class="status-icon signal"></div>
+          <div class="status-icon wifi"></div>
+          <div class="status-icon battery"></div>
+        </div>
+      </div>
+
+      <!-- Punch hole camera -->
+      <div class="punch-hole"></div>
+
+      <!-- Screen content -->
+      <div class="screen-content">
+
+        <!-- Logo -->
+        <div class="logo-zone">
+          <div class="logo-icon">
+            <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Pill icon -->
+              <rect x="6" y="14" width="26" height="10" rx="5" fill="white" opacity=".9"/>
+              <rect x="6" y="14" width="13" height="10" rx="5" fill="white" opacity=".4"/>
+              <!-- Heart pulse line -->
+              <path d="M10 19 L14 19 L16 14 L18 24 L20 17 L22 22 L24 19 L28 19"
+                    stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                    fill="none" opacity=".7"/>
+            </svg>
+          </div>
+          <div class="logo-name">MediMind</div>
+          <div class="logo-tagline">Adherencia Medicamentosa</div>
+        </div>
+
+        <!-- Form card -->
+        <div class="form-card">
+          <div class="form-title">Bienvenido</div>
+          <div class="form-subtitle">Inicia sesión para continuar</div>
+
+          <!-- Email -->
+          <div class="field-group">
+            <label class="field-label">Correo electrónico</label>
+            <div class="field-wrapper">
+              <div class="field-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#0D3F61" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 8l10 6 10-6"/>
+                </svg>
+              </div>
+              <input class="field-input active" type="email" value="usuario@email.com" readonly />
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="field-group">
+            <label class="field-label">Contraseña</label>
+            <div class="field-wrapper">
+              <div class="field-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#0D3F61" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                  <circle cx="12" cy="16" r="1" fill="#0D3F61"/>
+                </svg>
+              </div>
+              <input class="field-input" type="password" value="••••••••" readonly />
+              <div class="field-eye">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#0D3F61" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Forgot -->
+          <div class="forgot-link">
+            <a href="#">¿Olvidaste tu contraseña?</a>
+          </div>
+
+          <!-- Login button -->
+          <button class="btn-primary">Iniciar Sesión</button>
+
+          <!-- Divider -->
+          <div class="divider">o continúa con</div>
+
+          <!-- Register button -->
+          <button class="btn-secondary">Crear cuenta nueva</button>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-text">
+          Al continuar aceptas nuestros
+          <a href="#">Términos de uso</a> y
+          <a href="#">Política de privacidad</a>
+        </div>
+
+      </div>
+
+      <!-- Home indicator -->
+      <div class="home-indicator"></div>
+
+    </div>
+  </div>
+
+</body>
+</html>

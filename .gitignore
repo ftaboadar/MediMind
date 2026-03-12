@@ -1,0 +1,32 @@
+# Android
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Gradle
+.gradle/
+build/
+
+# KeyStore files
+*.jks
+*.keystore
+
+# Google Services
+google-services.json
+
+# Claude Code memory files
+.claude/
+
+# Windows
+Thumbs.db
+Desktop.ini
