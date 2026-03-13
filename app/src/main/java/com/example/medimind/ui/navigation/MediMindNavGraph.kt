@@ -3,6 +3,7 @@ package com.example.medimind.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -16,7 +17,7 @@ import com.example.medimind.ui.screens.DoseConfirmedScreen
 import com.example.medimind.ui.screens.DoseDelayedScreen
 import com.example.medimind.ui.screens.DoseNotRegisteredScreen
 import com.example.medimind.ui.screens.HomeScreen
-import com.example.medimind.ui.screens.LockUrgentScreen
+import com.example.medimind.notification.NotificationHelper
 import com.example.medimind.ui.screens.LoginScreen
 import com.example.medimind.ui.screens.MedicationDetailScreen
 import com.example.medimind.ui.screens.NotificationScreen
@@ -51,7 +52,6 @@ object Routes {
     const val DETAIL = "detail/{medicationId}"
     const val NOTIFICATION = "notification"
     const val POSTPONE = "postpone"
-    const val LOCK_URGENT = "lock_urgent"
     const val DOSE_CONFIRMED = "dose_confirmed"
     const val DOSE_DELAYED = "dose_delayed"
     const val DOSE_NOT_REGISTERED = "dose_not_registered"
@@ -257,20 +257,16 @@ fun MediMindNavGraph(pendingRoute: String? = null) {
         }
 
         composable(Routes.POSTPONE) {
+            val context = LocalContext.current
             PostponeScreen(
                 onPostpone = { _ ->
-                    // Navigate to lock urgent after max postpones, otherwise go back
-                    navController.navigate(Routes.LOCK_URGENT)
+                    NotificationHelper.sendUrgentReminder(context)
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.HOME) { inclusive = false }
+                    }
                 },
                 onCancel = { navController.popBackStack() },
                 postponeCount = 1
-            )
-        }
-
-        composable(Routes.LOCK_URGENT) {
-            LockUrgentScreen(
-                onConfirmar = { navController.navigate(Routes.DOSE_CONFIRMED) },
-                onSaltar = { navController.navigate(Routes.SKIP_DOSE) }
             )
         }
 
