@@ -1,6 +1,7 @@
 package com.example.medimind.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -11,14 +12,21 @@ import androidx.navigation.navArgument
 import com.example.medimind.ui.screens.AddMedicationStep1Screen
 import com.example.medimind.ui.screens.AddMedicationStep2Screen
 import com.example.medimind.ui.screens.AddMedicationStep3Screen
+import com.example.medimind.ui.screens.DoseConfirmedScreen
+import com.example.medimind.ui.screens.DoseDelayedScreen
+import com.example.medimind.ui.screens.DoseNotRegisteredScreen
 import com.example.medimind.ui.screens.HomeScreen
+import com.example.medimind.ui.screens.LockUrgentScreen
 import com.example.medimind.ui.screens.LoginScreen
 import com.example.medimind.ui.screens.MedicationDetailScreen
+import com.example.medimind.ui.screens.NotificationScreen
 import com.example.medimind.ui.screens.OnboardingScreen1
 import com.example.medimind.ui.screens.OnboardingScreen2
 import com.example.medimind.ui.screens.OnboardingScreen3
+import com.example.medimind.ui.screens.PostponeScreen
 import com.example.medimind.ui.screens.RegisterScreen
 import com.example.medimind.ui.screens.SetupProfileScreen
+import com.example.medimind.ui.screens.SkipDoseScreen
 import com.example.medimind.ui.screens.SplashScreen
 import com.example.medimind.ui.screens.TutorialScreen
 import com.example.medimind.ui.screens.VerifyEmailScreen
@@ -41,14 +49,29 @@ object Routes {
     const val STEP3 = "step3"
     const val SUCCESS = "success"
     const val DETAIL = "detail/{medicationId}"
+    const val NOTIFICATION = "notification"
+    const val POSTPONE = "postpone"
+    const val LOCK_URGENT = "lock_urgent"
+    const val DOSE_CONFIRMED = "dose_confirmed"
+    const val DOSE_DELAYED = "dose_delayed"
+    const val DOSE_NOT_REGISTERED = "dose_not_registered"
+    const val SKIP_DOSE = "skip_dose"
 
     /** Builds a concrete DETAIL route string for a given [medicationId]. */
     fun detail(medicationId: String) = "detail/$medicationId"
 }
 
 @Composable
-fun MediMindNavGraph() {
+fun MediMindNavGraph(pendingRoute: String? = null) {
     val navController = rememberNavController()
+
+    LaunchedEffect(pendingRoute) {
+        if (pendingRoute != null) {
+            navController.navigate(pendingRoute) {
+                popUpTo(Routes.SPLASH) { inclusive = true }
+            }
+        }
+    }
 
     NavHost(navController = navController, startDestination = Routes.SPLASH) {
 
@@ -154,7 +177,8 @@ fun MediMindNavGraph() {
             HomeScreen(
                 viewModel = addMedicationViewModel,
                 onManualEntry = { navController.navigate(Routes.STEP1) },
-                onMedicationDetail = { id -> navController.navigate(Routes.detail(id)) }
+                onMedicationDetail = { id -> navController.navigate(Routes.detail(id)) },
+                onNotification = { navController.navigate(Routes.NOTIFICATION) }
             )
         }
 
@@ -171,7 +195,9 @@ fun MediMindNavGraph() {
             MedicationDetailScreen(
                 medicationId = medicationId,
                 onBack = { navController.popBackStack() },
-                onEdit = { navController.navigate(Routes.STEP1) }
+                onEdit = { navController.navigate(Routes.STEP1) },
+                onConfirmTake = { navController.navigate(Routes.DOSE_CONFIRMED) },
+                onPostpone = { navController.navigate(Routes.POSTPONE) }
             )
         }
 
@@ -215,6 +241,70 @@ fun MediMindNavGraph() {
                     navController.popBackStack(Routes.HOME, inclusive = false)
                 },
                 onEdit = { navController.navigate(Routes.STEP2) }
+            )
+        }
+
+        // ------------------------------------------------------------------
+        // Notification flow
+        // ------------------------------------------------------------------
+        composable(Routes.NOTIFICATION) {
+            NotificationScreen(
+                onTomado = { navController.navigate(Routes.DOSE_CONFIRMED) },
+                onPosponer = { navController.navigate(Routes.POSTPONE) },
+                onVer = { navController.navigate(Routes.detail("1")) },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.POSTPONE) {
+            PostponeScreen(
+                onPostpone = { _ ->
+                    // Navigate to lock urgent after max postpones, otherwise go back
+                    navController.navigate(Routes.LOCK_URGENT)
+                },
+                onCancel = { navController.popBackStack() },
+                postponeCount = 1
+            )
+        }
+
+        composable(Routes.LOCK_URGENT) {
+            LockUrgentScreen(
+                onConfirmar = { navController.navigate(Routes.DOSE_CONFIRMED) },
+                onSaltar = { navController.navigate(Routes.SKIP_DOSE) }
+            )
+        }
+
+        composable(Routes.DOSE_CONFIRMED) {
+            DoseConfirmedScreen(
+                onCerrar = {
+                    navController.popBackStack(Routes.HOME, inclusive = false)
+                }
+            )
+        }
+
+        composable(Routes.DOSE_DELAYED) {
+            DoseDelayedScreen(
+                onEntendido = {
+                    navController.popBackStack(Routes.HOME, inclusive = false)
+                }
+            )
+        }
+
+        composable(Routes.DOSE_NOT_REGISTERED) {
+            DoseNotRegisteredScreen(
+                onEntendido = {
+                    navController.popBackStack(Routes.HOME, inclusive = false)
+                },
+                onContactarMedico = { /* reserved for future implementation */ }
+            )
+        }
+
+        composable(Routes.SKIP_DOSE) {
+            SkipDoseScreen(
+                onBack = { navController.popBackStack() },
+                onSkip = { _ ->
+                    navController.navigate(Routes.DOSE_NOT_REGISTERED)
+                }
             )
         }
     }

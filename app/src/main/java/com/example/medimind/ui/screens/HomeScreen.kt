@@ -33,6 +33,8 @@ import androidx.compose.material.icons.rounded.Medication
 import androidx.compose.material.icons.rounded.NotificationsNone
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,6 +46,8 @@ import androidx.compose.runtime.setValue
 import com.example.medimind.ui.viewmodel.AddMedicationViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import com.example.medimind.notification.NotificationHelper
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
@@ -68,6 +72,7 @@ import com.example.medimind.ui.theme.MediLightBlue
 import com.example.medimind.ui.theme.MediLightGreen
 import com.example.medimind.ui.theme.MediMindTheme
 import com.example.medimind.ui.theme.MediOrange
+import com.example.medimind.ui.theme.MediSoftBlue
 import com.example.medimind.ui.theme.MediWhite
 import com.example.medimind.ui.theme.MediYellowBg
 
@@ -112,7 +117,7 @@ private val sampleDoses = listOf(
     ),
     MedicationDose(
         id = "3",
-        medicationName = "Atorvastatina 20mg",
+        medicationName = "Aspirina 100mg",
         badge = "Programado",
         time = "Sobre la cena",
         doseInfo = "1 tableta · Con agua, noche",
@@ -129,7 +134,8 @@ private val sampleDoses = listOf(
 fun HomeScreen(
     viewModel: AddMedicationViewModel? = null,
     onManualEntry: () -> Unit = {},
-    onMedicationDetail: (String) -> Unit = {}
+    onMedicationDetail: (String) -> Unit = {},
+    onNotification: () -> Unit = {}
 ) {
     val doses = remember { sampleDoses }
     var showGuide by remember { mutableStateOf(false) }
@@ -139,6 +145,7 @@ fun HomeScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(MediBackground)
                 .background(
                     Brush.radialGradient(
                         colors = listOf(MediLightBlue, Color.Transparent),
@@ -146,14 +153,13 @@ fun HomeScreen(
                         radius = 600f
                     )
                 )
-                .background(MediBackground)
         )
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 72.dp)
+            contentPadding = PaddingValues(bottom = 90.dp)
         ) {
-            item { HomeHeader() }
+            item { HomeHeader(onNotification = onNotification) }
             item {
                 Spacer(modifier = Modifier.height(8.dp))
                 AdherenceCard()
@@ -176,7 +182,6 @@ fun HomeScreen(
         HomeBottomNavBar(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .navigationBarsPadding()
         )
 
         if (showGuide) {
@@ -206,7 +211,10 @@ fun HomeScreen(
 // ---------------------------------------------------------------------------
 
 @Composable
-private fun HomeHeader() {
+private fun HomeHeader(onNotification: () -> Unit = {}) {
+    var menuExpanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -220,20 +228,41 @@ private fun HomeHeader() {
             Text("Miércoles,", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = MediDeepBlue)
             Text("4 de febrero", fontSize = 26.sp, fontWeight = FontWeight.Normal, color = MediLabel)
         }
-        Box(
-            modifier = Modifier
-                .size(52.dp)
-                .clip(CircleShape)
-                .background(Brush.linearGradient(colors = listOf(MediBlue, MediDarkBlue)))
-                .clickable { },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Person,
-                contentDescription = "Perfil",
-                tint = MediWhite,
-                modifier = Modifier.size(28.dp)
-            )
+        Box {
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(CircleShape)
+                    .background(Brush.linearGradient(colors = listOf(MediBlue, MediDarkBlue)))
+                    .clickable { menuExpanded = true },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Person,
+                    contentDescription = "Perfil",
+                    tint = MediWhite,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+            DropdownMenu(
+                expanded = menuExpanded,
+                onDismissRequest = { menuExpanded = false },
+                containerColor = MediWhite
+            ) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            "🔔  Simular notificación",
+                            fontSize = 14.sp,
+                            color = MediDeepBlue
+                        )
+                    },
+                    onClick = {
+                        menuExpanded = false
+                        NotificationHelper.sendUrgentReminder(context)
+                    }
+                )
+            }
         }
     }
 }
@@ -324,9 +353,9 @@ private fun SectionHeader(onAddMedication: () -> Unit) {
             contentAlignment = Alignment.Center
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("+", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MediWhite)
+                Text("+", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MediWhite)
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Añadir", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MediWhite)
+                Text("Añadir", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MediWhite)
             }
         }
     }
@@ -345,7 +374,7 @@ fun MedCard(
     val accentColor = when (dose.status) {
         DoseStatus.TAKEN -> MediGreen
         DoseStatus.PENDING -> MediOrange
-        DoseStatus.SCHEDULED -> MediBlue
+        DoseStatus.SCHEDULED -> MediSoftBlue
     }
 
     Row(
@@ -371,7 +400,7 @@ fun MedCard(
         Column(
             modifier = Modifier
                 .weight(1f)
-                .padding(horizontal = 14.dp, vertical = 10.dp)
+                .padding(horizontal = 14.dp, vertical = 6.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(dose.medicationName, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MediDeepBlue)
@@ -383,18 +412,18 @@ fun MedCard(
                 }
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(7.dp))
+                        .clip(RoundedCornerShape(100.dp))
+                        .border(2.dp, accentColor, RoundedCornerShape(100.dp))
                         .background(badgeBg)
-                        .padding(horizontal = 14.dp, vertical = 4.dp)
+                        .padding(horizontal = 14.dp, vertical = 2.dp)
                 ) {
                     Text(dose.badge, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = accentColor)
                 }
             }
-            Spacer(modifier = Modifier.height(3.dp))
-            Text(dose.time, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = accentColor)
             Spacer(modifier = Modifier.height(2.dp))
+            Text(dose.time, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = accentColor)
             Text(dose.doseInfo, fontSize = 11.sp, color = MediLabel)
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(1.dp))
             Text(dose.note, fontSize = 10.sp, color = MediGrayText)
         }
 
@@ -443,16 +472,16 @@ fun MedCard(
 
 @Composable
 private fun HomeBottomNavBar(modifier: Modifier = Modifier) {
-    Box(
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .height(72.dp)
             .background(MediWhite)
             .border(1.dp, MediBorder, RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp))
     ) {
         Row(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .height(90.dp)
                 .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
@@ -461,6 +490,7 @@ private fun HomeBottomNavBar(modifier: Modifier = Modifier) {
             BottomNavItem(label = "Estadísticas", icon = { Icon(Icons.Rounded.BarChart, contentDescription = null, modifier = Modifier.size(26.dp)) }, isActive = false)
             BottomNavItem(label = "Perfil", icon = { Icon(Icons.Rounded.Person, contentDescription = null, modifier = Modifier.size(26.dp)) }, isActive = false)
         }
+        Spacer(modifier = Modifier.navigationBarsPadding())
     }
 }
 
@@ -473,11 +503,11 @@ private fun BottomNavItem(
     val color = if (isActive) MediBlue else MediGrayText
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
     ) {
         Box(
             modifier = Modifier
-                .size(56.dp)
+                .size(44.dp)
                 .clip(RoundedCornerShape(18.dp))
                 .then(if (isActive) Modifier.background(MediBlue.copy(alpha = 0.10f)) else Modifier),
             contentAlignment = Alignment.Center
@@ -492,8 +522,8 @@ private fun BottomNavItem(
         Text(
             text = label,
             fontSize = 11.sp,
-            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
-            color = color
+            fontWeight = FontWeight.Normal,
+            color = MediGrayText
         )
     }
 }

@@ -84,14 +84,18 @@ private val sampleAdherenceWeek = listOf(
  *
  * @param medicationId Identifier of the medication to display.
  * @param onBack Invoked when the user taps the back button.
- * @param onEdit Invoked when the user taps the edit icon or "Editar medicamento" button.
+ * @param onEdit Invoked when the user taps the edit icon in the top bar.
+ * @param onConfirmTake Invoked when the user taps "Confirmar toma ahora".
+ * @param onPostpone Invoked when the user taps "Posponer recordatorio".
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MedicationDetailScreen(
     medicationId: String = "1",
     onBack: () -> Unit = {},
-    onEdit: () -> Unit = {}
+    onEdit: () -> Unit = {},
+    onConfirmTake: () -> Unit = {},
+    onPostpone: () -> Unit = {}
 ) {
     var showDeleteSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -101,8 +105,8 @@ fun MedicationDetailScreen(
         containerColor = MediBackground,
         bottomBar = {
             DetailBottomActionBar(
-                onTakeNow = { /* confirm dose taken */ },
-                onEdit = onEdit
+                onConfirmTake = onConfirmTake,
+                onPostpone = onPostpone
             )
         }
     ) { innerPadding ->
@@ -632,8 +636,8 @@ private fun DeleteConfirmationSheet(
 
 @Composable
 private fun DetailBottomActionBar(
-    onTakeNow: () -> Unit,
-    onEdit: () -> Unit
+    onConfirmTake: () -> Unit,
+    onPostpone: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -648,40 +652,36 @@ private fun DetailBottomActionBar(
             .padding(top = 12.dp, bottom = 20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        // Primary: Tomar ahora — gradient
+        // Primary: Confirmar toma ahora — solid MediGreen
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
-                .clip(RoundedCornerShape(14.dp))
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(Color(0xFF1A6FA8), Color(0xFF0D3F61))
-                    )
-                )
-                .clickable { onTakeNow() },
+                .clip(RoundedCornerShape(100.dp))
+                .background(MediGreen)
+                .clickable { onConfirmTake() },
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Tomar ahora",
+                text = "✓ Confirmar toma ahora",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 color = MediWhite
             )
         }
 
-        // Secondary: Editar medicamento — outline
+        // Secondary: Posponer recordatorio — outline
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(46.dp)
-                .clip(RoundedCornerShape(14.dp))
-                .border(1.dp, MediBlue, RoundedCornerShape(14.dp))
-                .clickable { onEdit() },
+                .clip(RoundedCornerShape(100.dp))
+                .border(1.dp, MediBlue, RoundedCornerShape(100.dp))
+                .clickable { onPostpone() },
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Editar medicamento",
+                text = "⏰ Posponer recordatorio",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MediBlue
